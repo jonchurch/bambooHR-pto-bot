@@ -5,6 +5,7 @@ const request = require('request-promise-native')
 const parseXml = require('xml2js').parseString
 const moment = require('moment')
 require('moment-range')
+const _ = require('lodash')
 
 // I am going to loop through the xml data and parse out the names, and dates of the requests. I need to format the requests, add multiple requests from the same person into a single line, and send a string to botkit
 // When MVP of this would be just parsing the name and date of a single request
@@ -16,13 +17,7 @@ function whosOut() {
     request(options).then(function(xml) {
         parseXml(xml, function(err, result) {
             // console.log(result)
-            const resultArr = [{
-                name: 'Steve Church',
-                days: ['Monday']
-            },{
-                name: 'Jon Church',
-                days: ['Monday']
-            }]
+            const resultArr = []
             const weekStart = moment().startOf('isoweek')
             const weekEnd = moment().endOf('isoweek').subtract('2', 'days')
             const weekRange = moment.range(weekStart, weekEnd)
@@ -37,29 +32,23 @@ function whosOut() {
                 }
                 if (requestRange.overlaps(weekRange)) {
                     const daysOffArray = weekRange.intersect(requestRange).toArray('days')
-
-
                     for (let j = 0; j < daysOffArray.length; j += 1) {
                         resObj.days.push(daysOffArray[j].format('dddd'))
 
                     }
 
+                    const found = _.find(resultArr, {'name': resObj.name})
                     //if user found
-                    if (resultArr.some(function(el){
-                      console.log(el)
-                      return el.name === resObj.name
-                    })) {
-                      
-
+                    if (found) {
+                      found.days = found.days.concat(resObj.days)
+                      }
+                      //If user not found
+                     else {
+                       resultArr.push(resObj)
                     }
-
-
-                    //If user not found
-                    resultArr.push(resObj)
                 }
             }
-            // console.log('result array', resultArr)
-
+            console.log('result array', resultArr)
 
         })
     })
@@ -68,7 +57,6 @@ function whosOut() {
 whosOut()
 
 function checkAndAdd(name, arr) {
-    var id = arr.length + 1;
     var found = arr.some(function(el) {
         return el.username === name;
     });
