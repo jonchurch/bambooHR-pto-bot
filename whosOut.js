@@ -1,5 +1,4 @@
 'use strict';
-require('dotenv').config()
 const request = require('request-promise-native')
 const Botkit = require('botkit')
 const parseXml = require('xml2js').parseString
