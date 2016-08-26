@@ -73,7 +73,7 @@ function whosOut() {
             formArr = formArr.join('\n')
             bot.sendWebhook({
                 text: 'This week: '+ weekStart.format('MM/DD')+'-'+weekEnd.format('MM/DD') +'\n' + formArr,
-                channel: '#general',
+                channel: process.env.SLACK_CHANNEL,
                 username: 'Scheduled to be out!',
                 icon_emoji: ':date:'
             }, function(err) {
