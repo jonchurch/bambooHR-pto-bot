@@ -19,7 +19,7 @@ function whosOut() {
     })
 
     const options = {
-        url: 'https://545bd8cff15256e49319d84abed36c6c0c7e44e4:x@api.bamboohr.com/api/gateway.php/indica/v1/time_off/whos_out'
+        url: 'https://' + process.env.BAMBOOHR_TOKEN + ':x@api.bamboohr.com/api/gateway.php/' + process.env.BAMBOOHR_SUBDOMAIN + '/v1/time_off/whos_out'
     }
     request(options).then(function(xml) {
         parseXml(xml, function(err, result) {
