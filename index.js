@@ -13,3 +13,4 @@ const j = schedule.scheduleJob(rule, function(err) {
   }
   whosOut()
 })
+console.log('Messages scheduled for Mondays at 8am!');
