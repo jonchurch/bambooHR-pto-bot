@@ -10,11 +10,10 @@ Uses the bamboohr time off api, botkit, lodash, and moment!
 
 
 #Setup
-1. Create a .env file from the .env-example
-2. Generate a Bamboohr API token from an admin account, set it to BAMBOOHR_TOKEN in your .env file
-3. Set your team's subdomain for Bamboohr (EX. 'paracosm') to BAMBOOHR_SUBDOMAIN in .env file
+1. Set environment variables on heroku or wherever else the integration is hosted. See .env-example for necessary variables
+2. Generate a Bamboohr API token from an admin account, set it to BAMBOOHR_TOKEN in your environment
+3. Set your team's subdomain for Bamboohr (EX. 'paracosm') to BAMBOOHR_SUBDOMAIN in environment
 3. Go to slack integrations, create a custom incoming webhook, select the channel you want the messages to arrive in, update the SLACK_WEBHOOK and SLACK_CHANNEL in .env
-
 
 #Run
 ```

@@ -5,25 +5,25 @@ const parseXml = require('xml2js').parseString
 const moment = require('moment')
 require('moment-range')
 const _ = require('lodash')
+const controller = Botkit.slackbot({})
+
+const bot = controller.spawn({
+  incoming_webhook:{
+    url: process.env.SLACK_WEBHOOK
+  }
+})
 
 function whosOut() {
-    const controller = Botkit.slackbot({
-        debug: false
-    })
-
-    const bot = controller.spawn({
-        incoming_webhook: {
-            url: process.env.SLACK_WEBHOOK
-        }
-    })
-
+  console.log('Whos out running')
     const options = {
         url: 'https://' + process.env.BAMBOOHR_TOKEN + ':x@api.bamboohr.com/api/gateway.php/' + process.env.BAMBOOHR_SUBDOMAIN + '/v1/time_off/whos_out'
     }
     request(options).then(function(xml) {
         parseXml(xml, function(err, result) {
             const resultArr = []
+            //Setting week start to Monday
             const weekStart = moment().startOf('isoweek')
+            //Setting week end to Friday
             const weekEnd = moment().endOf('isoweek').subtract('2', 'days')
             const weekRange = moment.range(weekStart, weekEnd)
             for (let i = 0; i < result.calendar.item.length; i += 1) {
@@ -33,6 +33,8 @@ function whosOut() {
                 const requestRange = moment.range(startDate, endDate)
                 if (index.$.type === 'holiday') {
                   //skip holidays
+                  console.log(index.holiday)
+
                   continue
                 }
                 const resObj = {
