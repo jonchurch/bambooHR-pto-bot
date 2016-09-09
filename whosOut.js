@@ -5,9 +5,13 @@ const parseXml = require('xml2js').parseString
 const moment = require('moment')
 require('moment-range')
 const _ = require('lodash')
+const controller = Botkit.slackbot({})
 
-
-
+const bot = controller.spawn({
+  incoming_webhook:{
+    url: process.env.SLACK_WEBHOOK
+  }
+})
 
 function whosOut() {
   console.log('Whos out running')
