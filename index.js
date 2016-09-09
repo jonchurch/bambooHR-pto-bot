@@ -1,7 +1,6 @@
 'use strict';
 const whosOut = require('./whosOut')
 const schedule = require('node-schedule')
-const moment = require('moment-timezone')
 const http = require('http')
 
 const port = process.env.PORT
@@ -17,9 +16,9 @@ function handleRequest(req, res){
 
 
 const rule = new schedule.RecurrenceRule()
-rule.dayOfWeek = 5
-rule.hour = 16
-rule.minute = 43
+rule.dayOfWeek = 1
+rule.hour = 8
+rule.minute = 0
 
 
 const j = schedule.scheduleJob(rule, function(err) {
@@ -28,12 +27,7 @@ const j = schedule.scheduleJob(rule, function(err) {
   }
   whosOut()
 })
+
 console.log('PTO Bot for',process.env.BAMBOOHR_SUBDOMAIN)
 
 console.log('Messages scheduled for Mondays at 8am!');
-
-console.log('server Time', moment().format('hh:mm'));
-
-console.log('EDT Time',moment().tz('America/New_York').format('hh:mm'));
-
-// whosOut()

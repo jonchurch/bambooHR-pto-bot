@@ -16,7 +16,6 @@
     "lodash": "^4.15.0",
     "moment": "^2.14.1",
     "moment-range": "^2.2.0",
-    "moment-timezone": "^0.5.5",
     "node-schedule": "^1.1.1",
     "request-promise-native": "^1.0.3",
     "xml2js": "^0.4.17"
