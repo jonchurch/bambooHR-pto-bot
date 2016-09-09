@@ -6,8 +6,8 @@ const moment = require('moment-timezone')
 
 const rule = new schedule.RecurrenceRule()
 rule.dayOfWeek = 5
-rule.hour = 15
-rule.minute = 40
+rule.hour = 16
+rule.minute = 4
 
 const j = schedule.scheduleJob(rule, function(err) {
   if (err) {
