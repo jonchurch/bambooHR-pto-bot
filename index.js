@@ -3,13 +3,14 @@ require('dotenv').config()
 const whosOut = require('./whosOut')
 const schedule = require('node-schedule')
 const http = require('http')
-const port = process.env.PORT
+const port = process.env.PORT || 3000
 
 const server = http.createServer(handleRequest)
 
 const rule = new schedule.RecurrenceRule()
 rule.dayOfWeek = 1
 rule.hour = 8
+// Don't forget the minute!
 rule.minute = 0
 
 
