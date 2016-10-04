@@ -4,7 +4,7 @@ const Botkit = require('botkit')
 const parseXml = require('xml2js').parseString
 const moment = require('moment')
 require('moment-range')
-const _ = require('lodash')
+const find = require('lodash.find')
 const controller = Botkit.slackbot({})
 
 const bot = controller.spawn({
@@ -81,7 +81,7 @@ function whosOut() {
                 }
                 //else if {}
             }
-            if (requestResult.length > 0 && holiResult.length > 1) {
+            if (requestResult.length > 0 && holiResult.length > 0) {
 
                 bot.sendWebhook({
                     text: 'Week of ' + weekStart.format('MM/DD') + '-' + weekEnd.format('MM/DD') + '\n' + 'Scheduled to be out:\n' + formatArrayToString(requestResult) + '\n' + '🎉Company Holidays this week🎉:\n' + formatArrayToString(holiResult),

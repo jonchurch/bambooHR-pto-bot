@@ -1,25 +1,19 @@
 # Bamboohr "Who's Out?" Slackbot
 ![bhr](https://cloud.githubusercontent.com/assets/12915163/17829398/4b948526-667b-11e6-8ba1-b6d429b4db20.jpg)
 
-Slack bot to post in #general every Monday with who is scheduled to be out of the office this week
-It looks at the current week (M-F) and sees if any scheduled time off overlaps. The people with time off, and the days they'll be gone, will be posted to slack.
+Slack bot to post in #work_schedules every Monday with who is scheduled to be out of the office this week
+It looks at the current week (M-F) and sees if any scheduled time off overlaps. The people with time off, and the days they'll be gone, will be posted to Slack.
 
-Uses the bamboohr time off api, botkit, lodash, and moment!
+Uses the BambooHR time off API, botkit, lodash, and moment!
 
-##Never bring a lunch to work for a friend who has left town again!
+## Never bring a lunch to work for a friend who has left town again! lolz
 
 
-#Setup
-1. Set environment variables on heroku or wherever else the integration is hosted. See .env-example for necessary variables
-2. Generate a Bamboohr API token from an admin account, set it to BAMBOOHR_TOKEN in your environment
-3. Set your team's subdomain for Bamboohr (EX. 'paracosm') to BAMBOOHR_SUBDOMAIN in environment
-3. Go to slack integrations, create a custom incoming webhook, select the channel you want the messages to arrive in, update the SLACK_WEBHOOK and SLACK_CHANNEL in .env
-
-#Run
+# Setup
+1. From within the bambooHR-whosOut directory, run
 ```
-npm install
-
-npm start
+WEBHOOK=https://hooks.slack.com/services/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 &&
+docker build -t whosout:latest -q . &&
+docker run -d --env BAMBOOHR_SUBDOMAIN=paracosm --env SLACK_WEBHOOK=$WEBHOOK --name whosout --env BAMBOOHR_TOKEN=<YOUR TOKEN> whosout
 ```
-
-The scheduler is now running, and will wait until 8am system time to post to general chat in slack.
+2. The scheduler is now running, and will wait until 8am Mondays system time to post to #work_schedules chat in Slack
