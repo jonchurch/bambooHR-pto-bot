@@ -15,7 +15,7 @@ const j = schedule.scheduleJob(rule, function(err) {
   whosOut()
 })
 
-whosOut()
+// whosOut()
 console.log('PTO Bot for',process.env.BAMBOOHR_SUBDOMAIN)
 
 console.log('Messages scheduled for Mondays at 8am!')
