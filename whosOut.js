@@ -14,7 +14,8 @@ const bot = controller.spawn({
 })
 
 function whosOut() {
-    console.log('Whos out running')
+const date = new Date()
+    console.log('Whos out running\nCurrent time is: '+ date.getHours() + ':' + date.getMinutes())
 
     const options = {
         url: 'https://' + process.env.BAMBOOHR_TOKEN + ':x@api.bamboohr.com/api/gateway.php/' + process.env.BAMBOOHR_SUBDOMAIN + '/v1/time_off/whos_out/?start=2016-09-1&end=2016-12-31'
@@ -22,6 +23,7 @@ function whosOut() {
 
     request(options).then(function(xml) {
         parseXml(xml, function(err, result) {
+	console.log('=============RESULT\n',result)
             const requestResult = []
             const holiResult = []
                 //Setting week start to Monday
