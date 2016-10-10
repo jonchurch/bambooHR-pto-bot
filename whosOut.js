@@ -30,7 +30,8 @@ const date = new Date()
             const weekStart = moment().startOf('isoweek')
                 //Setting week end to Friday
             const weekEnd = moment().endOf('isoweek').subtract('2', 'days')
-            const weekRange = moment.range(weekStart, weekEnd)
+            const thisWeekRange = moment.range(weekStart, weekEnd)
+            const nextWeekRange = moment.range(weekStart.add('1', 'weeks'), weekEnd.add('1', 'weeks'))
             for (let i = 0; i < result.calendar.item.length; i += 1) {
                 console.log('LOOPING', result.calendar.item);
                 const index = result.calendar.item[i]
@@ -48,7 +49,7 @@ const date = new Date()
 
                     const holiRangeArray = moment.range(startDate, endDate).toArray('days')
 
-                    if (entryRange.overlaps(weekRange)) {
+                    if (entryRange.overlaps(thisWeekRange)) {
                       // console.log('Holiday overlaps with week!');
 
                         for (var k = 0; k < holiRangeArray.length; k += 1) {
@@ -65,13 +66,21 @@ const date = new Date()
                         days: []
                     }
 
-                    if (entryRange.overlaps(weekRange)) {
+                    if (entryRange.overlaps(thisWeekRange)) {
                       // console.log('This non-holiday entry overlaps with this week!');
 
-                        const daysOffArray = weekRange.intersect(entryRange).toArray('days')
-                        for (let j = 0; j < daysOffArray.length; j += 1) {
+                        const daysOffArrayThisWeek = thisWeekRange.intersect(entryRange).toArray('days')
+                        for (let j = 0; j < daysOffArrayThisWeek.length; j += 1) {
 
-                            resObj.days.push(daysOffArray[j].format('dddd'))
+                            resObj.days.push(daysOffArrayThisWeek[j].format('dddd'))
+                        }
+                    if (entryRange.overlaps(nextWeekRange)) {
+                      // console.log('This non-holiday entry overlaps with next week!');
+
+                        const daysOffArrayNextWeek = nextWeekRange.intersect(entryRange).toArray('days')
+                        for (let j = 0; j < daysOffArrayNextWeek.length; j += 1) {
+
+                            resObj.days.push(daysOffArrayNextWeek[j].format('dddd'))
                         }
 
                         const found = find(requestResult, {
