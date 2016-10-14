@@ -10,6 +10,9 @@ Uses the BambooHR time off API, botkit, lodash.find, and moment!
 
 
 # Setup
+
+1. Generate Slack custom integration webhook [here](https://slack.com/apps/manage/custom-integrations) and choose the channel you would like WhosOut to post to. Create a BambooHR api token within your account, and note the subdomain associated with your BambooHR organization.
+
 1. From within the bambooHR-whosOut directory, run
 ```
 docker build -t whosout:latest -q . &&
