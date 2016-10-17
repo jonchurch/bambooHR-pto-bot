@@ -35,7 +35,7 @@ function whosOut() {
                     const responseArray = []
 
                     for (let j = 0; j < 2; j += 1) {
-
+                        var thisNext = 'This'
                         const requestResult = []
                         const holiResult = []
                             //Setting week start to Monday
@@ -48,6 +48,7 @@ function whosOut() {
                             //adjust for second week
                             weekStart.add('1', 'weeks')
                             weekEnd.add('1', 'weeks')
+                            thisNext = 'Next'
                         }
                         const weekRange = moment.range(weekStart, weekEnd)
 
@@ -107,34 +108,42 @@ function whosOut() {
                                     }
                                 }
                             }
+                        } // end calendar for loop
+
+                        if (requestResult.length > 0 && holiResult.length > 0) {
+                            // console.log('Requests and holdays!');
+
+                            responseArray.push('_' +thisNext + ' week_' + '\n' + formatArrayToString(requestResult) + '\n' + '🎉Company Holidays this week🎉:\n' + formatArrayToString(holiResult))
+
+                        } else if (requestResult.length > 0 && holiResult.length < 1) {
+                            // console.log('Requests and no holdays!');
+
+                            responseArray.push('_' +thisNext + ' week_' + '\n' + formatArrayToString(requestResult))
+
+                        } else if (requestResult.length < 1 && holiResult.length > 0) {
+                            // console.log('No requests and some holdays!');
+
+                            responseArray.push('_' +thisNext + ' week_' + '\n' + 'Nobody scheduled to be out ' + thisNext.toLowerCase() + '  week\n' + '🎉 Company Holidays ' + thisNext.toLowerCase() + ' week 🎉' + formatArrayToString(holiResult))
+
+                        } else if (requestResult.length < 1 && holiResult.length < 1) {
+                            // console.log('No requests and no holdays!');
+
+                            responseArray.push('_' +thisNext + ' week_' + '\n' + 'Nobody scheduled to be out ' + thisNext.toLowerCase() + '  week')
                         }
-                    } // end for loop
 
-                    let response
+                    } // end week for loop
 
-                    if (requestResult.length > 0 && holiResult.length > 0) {
-                        // console.log('Requests and holdays!');
-
-                        responseArray.push('Week of ' + weekStart.format('MM/DD') + '-' + weekEnd.format('MM/DD') + '\n' + 'Scheduled to be out:\n' + formatArrayToString(requestResult) + '\n' + '🎉Company Holidays this week🎉:\n' + formatArrayToString(holiResult))
-
-                    } else if (requestResult.length > 0 && holiResult.length < 1) {
-                        // console.log('Requests and no holdays!');
-
-                        responseArray.push('Week of ' + weekStart.format('MM/DD') + '-' + weekEnd.format('MM/DD') + '\n' + 'Scheduled to be out:\n' + formatArrayToString(requestResult))
-
-                    } else if (requestResult.length < 1 && holiResult.length > 0) {
-                        // console.log('No requests and some holdays!');
-
-                        responseArray.push('Week of ' + weekStart.format('MM/DD') + '-' + weekEnd.format('MM/DD') + '\n' + 'Nobody scheduled to be out this week!\n' + '🎉 Company Holidays this week 🎉' + formatArrayToString(holiResult))
-
-                    } else if (requestResult.length < 1 && holiResult.length < 1) {
-                        // console.log('No requests and no holdays!');
-
-                        responseArray.push('Week of ' + weekStart.format('MM/DD') + '-' + weekEnd.format('MM/DD') + '\n' + 'Nobody scheduled to be out this week!')
-                    }
+                    bot.sendWebhook({
+                                       text: 'Scheduled to be out:\n' +  responseArray.join('\n\n'),
+                                       username: 'Who\'s Out?',
+                                       icon_emoji: ':date:'
+                                   }, function(err) {
+                                       if (err) {
+                                           console.log(err)
+                                       } else console.log('message sent!');
+                                   });
 
 
-                }
                 console.log('RESPONSE ARRAY:\n', responseArray)
 
             })
