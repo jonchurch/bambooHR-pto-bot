@@ -14,33 +14,52 @@ const bot = controller.spawn({
 })
 
 function whosOut() {
-const date = new Date()
-    console.log('Whos out running\nCurrent time is: '+ date.getHours() + ':' + date.getMinutes())
+    const date = new Date()
+    console.log('Whos out running\nCurrent time is: ' + date.getHours() + ':' + date.getMinutes())
 
     const options = {
         url: 'https://' + process.env.BAMBOOHR_TOKEN + ':x@api.bamboohr.com/api/gateway.php/' + process.env.BAMBOOHR_SUBDOMAIN + '/v1/time_off/whos_out/?start=2016-09-1&end=2016-12-31'
     }
 
+
+var data;
+
     request(options).then(function(xml) {
         parseXml(xml, function(err, result) {
-	console.log('=============RESULT\n',result)
+          if (err) {
+            console.log('XML PARSE ERROR:', err)
+            return
+          }
+            // console.log('=============RESULT\n', result)
+
+            const responseArray = []
+
+            for (let j = 0; j < 2; j += 1) {
+
             const requestResult = []
             const holiResult = []
                 //Setting week start to Monday
             const weekStart = moment().startOf('isoweek')
+
                 //Setting week end to Friday
             const weekEnd = moment().endOf('isoweek').subtract('2', 'days')
-            const thisWeekRange = moment.range(weekStart, weekEnd)
-            const nextWeekRange = moment.range(weekStart.add('1', 'weeks'), weekEnd.add('1', 'weeks'))
+
+            if (j === 1) {
+              //adjust for second week
+              weekStart.add('1', 'weeks')
+              weekEnd.add('1', 'weeks')
+            }
+            const weekRange = moment.range(weekStart, weekEnd)
+
             for (let i = 0; i < result.calendar.item.length; i += 1) {
-                console.log('LOOPING', result.calendar.item);
+                // console.log('LOOPING', result.calendar.item);
                 const index = result.calendar.item[i]
                 const startDate = moment(index.start[0])
                 const endDate = moment(index.end[0])
                 const entryRange = moment.range(startDate, endDate)
 
                 if (index.$.type === 'holiday') {
-                  // console.log('Found a holiday, somewhere, at index:', index);
+                    // console.log('Found a holiday, somewhere, at index:', index);
 
                     const holidayObj = {
                         name: index.holiday[0]._,
@@ -49,8 +68,8 @@ const date = new Date()
 
                     const holiRangeArray = moment.range(startDate, endDate).toArray('days')
 
-                    if (entryRange.overlaps(thisWeekRange)) {
-                      // console.log('Holiday overlaps with week!');
+                    if (entryRange.overlaps(weekRange)) {
+                        // console.log('Holiday overlaps with week!');
 
                         for (var k = 0; k < holiRangeArray.length; k += 1) {
                             holidayObj.days.push(holiRangeArray[k].format('MM/DD'))
@@ -59,102 +78,64 @@ const date = new Date()
                         continue
                     }
                 } else {
-                  // console.log('This index is not a holiday. Index:', index);
+                    // console.log('This index is not a holiday. Index:', index);
 
                     const resObj = {
                         name: index.employee[0]._,
                         days: []
                     }
 
-                    if (entryRange.overlaps(thisWeekRange)) {
-                      // console.log('This non-holiday entry overlaps with this week!');
+                    if (entryRange.overlaps(weekRange)) {
+                        // console.log('This non-holiday entry overlaps with this week!');
 
-                        const daysOffArrayThisWeek = thisWeekRange.intersect(entryRange).toArray('days')
+                        const daysOffArrayThisWeek = weekRange.intersect(entryRange).toArray('days')
                         for (let j = 0; j < daysOffArrayThisWeek.length; j += 1) {
 
                             resObj.days.push(daysOffArrayThisWeek[j].format('dddd'))
                         }
-                    if (entryRange.overlaps(nextWeekRange)) {
-                      // console.log('This non-holiday entry overlaps with next week!');
 
-                        const daysOffArrayNextWeek = nextWeekRange.intersect(entryRange).toArray('days')
-                        for (let j = 0; j < daysOffArrayNextWeek.length; j += 1) {
-
-                            resObj.days.push(daysOffArrayNextWeek[j].format('dddd'))
-                        }
-
-                        const found = find(requestResult, {
-                                'name': resObj.name
-                            })
-                            //if user found, add days to their object
-                        if (found) {
-                            found.days = found.days.concat(resObj.days)
-                        }
-                        //If user not found, push new user object into array
-                        else {
-                            requestResult.push(resObj)
+                            const found = find(requestResult, {
+                                    'name': resObj.name
+                                })
+                                //if user found, add days to their object
+                            if (found) {
+                                found.days = found.days.concat(resObj.days)
+                            }
+                            //If user not found, push new user object into array
+                            else {
+                                requestResult.push(resObj)
+                            }
                         }
                     }
                 }
-            } // end for loop
-            // console.log('requestResult.length ===', requestResult.length);
-            // console.log('holiResult.length ===', holiResult.length);
-            if (requestResult.length > 0 && holiResult.length > 0) {
-              // console.log('Requests and holdays!');
-                bot.sendWebhook({
-                    text: 'Week of ' + weekStart.format('MM/DD') + '-' + weekEnd.format('MM/DD') + '\n' + 'Scheduled to be out:\n' + formatArrayToString(requestResult) + '\n' + '🎉Company Holidays this week🎉:\n' + formatArrayToString(holiResult),
-                    channel: process.env.SLACK_CHANNEL,
-                    username: 'Who\'s Out?',
-                    icon_emoji: ':date:'
-                }, function(err) {
-                    if (err) {
-                        console.log(err)
-                    } else console.log('message sent!');
-                });
-            } else if (requestResult.length > 0 && holiResult.length < 1) {
-              // console.log('Requests and no holdays!');
+              }// end for loop
 
-                bot.sendWebhook({
-                    text: 'Week of ' + weekStart.format('MM/DD') + '-' + weekEnd.format('MM/DD') + '\n' + 'Scheduled to be out:\n' + formatArrayToString(requestResult),
-                    channel: process.env.SLACK_CHANNEL,
-                    username: 'Who\'s Out?',
-                    icon_emoji: ':date:'
-                }, function(err) {
-                    if (err) {
-                        console.log(err)
-                    } else console.log('message sent!');
-                })
-            } else if (requestResult.length < 1 && holiResult.length > 0) {
-              // console.log('No requests and some holdays!');
+                let response
 
-                bot.sendWebhook({
-                        text: 'Week of ' + weekStart.format('MM/DD') + '-' + weekEnd.format('MM/DD') + '\n' + 'Nobody scheduled to be out this week!\n' + '🎉 Company Holidays this week 🎉' + formatArrayToString(holiResult),
-                        channel: process.env.SLACK_CHANNEL,
-                        username: 'Who\'s Out?',
-                        icon_emoji: ':date:'
-                    }, function(err) {
-                        if (err) {
-                            console.log(err)
-                        } else console.log('message sent!');
-                    }
+                if (requestResult.length > 0 && holiResult.length > 0) {
+                    // console.log('Requests and holdays!');
 
-                )
-            } else if (requestResult.length < 1 && holiResult.length < 1) {
-              // console.log('No requests and no holdays!');
+                        responseArray.push('Week of ' + weekStart.format('MM/DD') + '-' + weekEnd.format('MM/DD') + '\n' + 'Scheduled to be out:\n' + formatArrayToString(requestResult) + '\n' + '🎉Company Holidays this week🎉:\n' + formatArrayToString(holiResult))
 
-                bot.sendWebhook({
-                        text: 'Week of ' + weekStart.format('MM/DD') + '-' + weekEnd.format('MM/DD') + '\n' + 'Nobody scheduled to be out this week!',
-                        channel: process.env.SLACK_CHANNEL,
-                        username: 'Who\'s Out?',
-                        icon_emoji: ':date:'
-                    }, function(err) {
-                        if (err) {
-                            console.log(err)
-                        } else console.log('message sent!');
-                    }
+                } else if (requestResult.length > 0 && holiResult.length < 1) {
+                    // console.log('Requests and no holdays!');
 
-                )
-            }
+                        responseArray.push('Week of ' + weekStart.format('MM/DD') + '-' + weekEnd.format('MM/DD') + '\n' + 'Scheduled to be out:\n' + formatArrayToString(requestResult))
+
+                } else if (requestResult.length < 1 && holiResult.length > 0) {
+                    // console.log('No requests and some holdays!');
+
+                            responseArray.push('Week of ' + weekStart.format('MM/DD') + '-' + weekEnd.format('MM/DD') + '\n' + 'Nobody scheduled to be out this week!\n' + '🎉 Company Holidays this week 🎉' + formatArrayToString(holiResult))
+
+                } else if (requestResult.length < 1 && holiResult.length < 1) {
+                    // console.log('No requests and no holdays!');
+
+                            responseArray.push('Week of ' + weekStart.format('MM/DD') + '-' + weekEnd.format('MM/DD') + '\n' + 'Nobody scheduled to be out this week!')
+                }
+
+
+              }
+console.log('RESPONSE ARRAY:\n',responseArray)
 
         })
     })
@@ -178,3 +159,15 @@ function formatArrayToString(array) {
 }
 
 module.exports = whosOut
+
+//
+// bot.sendWebhook({
+//     text: 'Week of ' + weekStart.format('MM/DD') + '-' + weekEnd.format('MM/DD') + '\n' + 'Scheduled to be out:\n' + formatArrayToString(requestResult),
+//     channel: process.env.SLACK_CHANNEL,
+//     username: 'Who\'s Out?',
+//     icon_emoji: ':date:'
+// }, function(err) {
+//     if (err) {
+//         console.log(err)
+//     } else console.log('message sent!');
+// })
