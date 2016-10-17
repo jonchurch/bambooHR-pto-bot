@@ -22,122 +22,122 @@ function whosOut() {
     }
 
 
-var data;
+    var data;
 
     request(options).then(function(xml) {
-        parseXml(xml, function(err, result) {
-          if (err) {
-            console.log('XML PARSE ERROR:', err)
-            return
-          }
-            // console.log('=============RESULT\n', result)
-
-            const responseArray = []
-
-            for (let j = 0; j < 2; j += 1) {
-
-            const requestResult = []
-            const holiResult = []
-                //Setting week start to Monday
-            const weekStart = moment().startOf('isoweek')
-
-                //Setting week end to Friday
-            const weekEnd = moment().endOf('isoweek').subtract('2', 'days')
-
-            if (j === 1) {
-              //adjust for second week
-              weekStart.add('1', 'weeks')
-              weekEnd.add('1', 'weeks')
-            }
-            const weekRange = moment.range(weekStart, weekEnd)
-
-            for (let i = 0; i < result.calendar.item.length; i += 1) {
-                // console.log('LOOPING', result.calendar.item);
-                const index = result.calendar.item[i]
-                const startDate = moment(index.start[0])
-                const endDate = moment(index.end[0])
-                const entryRange = moment.range(startDate, endDate)
-
-                if (index.$.type === 'holiday') {
-                    // console.log('Found a holiday, somewhere, at index:', index);
-
-                    const holidayObj = {
-                        name: index.holiday[0]._,
-                        days: []
+            parseXml(xml, function(err, result) {
+                    if (err) {
+                        console.log('XML PARSE ERROR:', err)
+                        return
                     }
+                    // console.log('=============RESULT\n', result)
 
-                    const holiRangeArray = moment.range(startDate, endDate).toArray('days')
+                    const responseArray = []
 
-                    if (entryRange.overlaps(weekRange)) {
-                        // console.log('Holiday overlaps with week!');
+                    for (let j = 0; j < 2; j += 1) {
 
-                        for (var k = 0; k < holiRangeArray.length; k += 1) {
-                            holidayObj.days.push(holiRangeArray[k].format('MM/DD'))
+                        const requestResult = []
+                        const holiResult = []
+                            //Setting week start to Monday
+                        const weekStart = moment().startOf('isoweek')
+
+                        //Setting week end to Friday
+                        const weekEnd = moment().endOf('isoweek').subtract('2', 'days')
+
+                        if (j === 1) {
+                            //adjust for second week
+                            weekStart.add('1', 'weeks')
+                            weekEnd.add('1', 'weeks')
                         }
-                        holiResult.push(holidayObj)
-                        continue
-                    }
-                } else {
-                    // console.log('This index is not a holiday. Index:', index);
+                        const weekRange = moment.range(weekStart, weekEnd)
 
-                    const resObj = {
-                        name: index.employee[0]._,
-                        days: []
-                    }
+                        for (let i = 0; i < result.calendar.item.length; i += 1) {
+                            // console.log('LOOPING', result.calendar.item);
+                            const index = result.calendar.item[i]
+                            const startDate = moment(index.start[0])
+                            const endDate = moment(index.end[0])
+                            const entryRange = moment.range(startDate, endDate)
 
-                    if (entryRange.overlaps(weekRange)) {
-                        // console.log('This non-holiday entry overlaps with this week!');
+                            if (index.$.type === 'holiday') {
+                                // console.log('Found a holiday, somewhere, at index:', index);
 
-                        const daysOffArrayThisWeek = weekRange.intersect(entryRange).toArray('days')
-                        for (let j = 0; j < daysOffArrayThisWeek.length; j += 1) {
+                                const holidayObj = {
+                                    name: index.holiday[0]._,
+                                    days: []
+                                }
 
-                            resObj.days.push(daysOffArrayThisWeek[j].format('dddd'))
-                        }
+                                const holiRangeArray = moment.range(startDate, endDate).toArray('days')
 
-                            const found = find(requestResult, {
-                                    'name': resObj.name
-                                })
-                                //if user found, add days to their object
-                            if (found) {
-                                found.days = found.days.concat(resObj.days)
+                                if (entryRange.overlaps(weekRange)) {
+                                    // console.log('Holiday overlaps with week!');
+
+                                    for (var k = 0; k < holiRangeArray.length; k += 1) {
+                                        holidayObj.days.push(holiRangeArray[k].format('MM/DD'))
+                                    }
+                                    holiResult.push(holidayObj)
+                                    continue
+                                }
+                            } else {
+                                // console.log('This index is not a holiday. Index:', index);
+
+                                const resObj = {
+                                    name: index.employee[0]._,
+                                    days: []
+                                }
+
+                                if (entryRange.overlaps(weekRange)) {
+                                    // console.log('This non-holiday entry overlaps with this week!');
+
+                                    const daysOffArrayThisWeek = weekRange.intersect(entryRange).toArray('days')
+                                    for (let j = 0; j < daysOffArrayThisWeek.length; j += 1) {
+
+                                        resObj.days.push(daysOffArrayThisWeek[j].format('dddd'))
+                                    }
+
+                                    const found = find(requestResult, {
+                                            'name': resObj.name
+                                        })
+                                        //if user found, add days to their object
+                                    if (found) {
+                                        found.days = found.days.concat(resObj.days)
+                                    }
+                                    //If user not found, push new user object into array
+                                    else {
+                                        requestResult.push(resObj)
+                                    }
+                                }
                             }
-                            //If user not found, push new user object into array
-                            else {
-                                requestResult.push(resObj)
-                            }
                         }
-                    }
-                }
-              }// end for loop
+                    } // end for loop
 
-                let response
+                    let response
 
-                if (requestResult.length > 0 && holiResult.length > 0) {
-                    // console.log('Requests and holdays!');
+                    if (requestResult.length > 0 && holiResult.length > 0) {
+                        // console.log('Requests and holdays!');
 
                         responseArray.push('Week of ' + weekStart.format('MM/DD') + '-' + weekEnd.format('MM/DD') + '\n' + 'Scheduled to be out:\n' + formatArrayToString(requestResult) + '\n' + '🎉Company Holidays this week🎉:\n' + formatArrayToString(holiResult))
 
-                } else if (requestResult.length > 0 && holiResult.length < 1) {
-                    // console.log('Requests and no holdays!');
+                    } else if (requestResult.length > 0 && holiResult.length < 1) {
+                        // console.log('Requests and no holdays!');
 
                         responseArray.push('Week of ' + weekStart.format('MM/DD') + '-' + weekEnd.format('MM/DD') + '\n' + 'Scheduled to be out:\n' + formatArrayToString(requestResult))
 
-                } else if (requestResult.length < 1 && holiResult.length > 0) {
-                    // console.log('No requests and some holdays!');
+                    } else if (requestResult.length < 1 && holiResult.length > 0) {
+                        // console.log('No requests and some holdays!');
 
-                            responseArray.push('Week of ' + weekStart.format('MM/DD') + '-' + weekEnd.format('MM/DD') + '\n' + 'Nobody scheduled to be out this week!\n' + '🎉 Company Holidays this week 🎉' + formatArrayToString(holiResult))
+                        responseArray.push('Week of ' + weekStart.format('MM/DD') + '-' + weekEnd.format('MM/DD') + '\n' + 'Nobody scheduled to be out this week!\n' + '🎉 Company Holidays this week 🎉' + formatArrayToString(holiResult))
 
-                } else if (requestResult.length < 1 && holiResult.length < 1) {
-                    // console.log('No requests and no holdays!');
+                    } else if (requestResult.length < 1 && holiResult.length < 1) {
+                        // console.log('No requests and no holdays!');
 
-                            responseArray.push('Week of ' + weekStart.format('MM/DD') + '-' + weekEnd.format('MM/DD') + '\n' + 'Nobody scheduled to be out this week!')
+                        responseArray.push('Week of ' + weekStart.format('MM/DD') + '-' + weekEnd.format('MM/DD') + '\n' + 'Nobody scheduled to be out this week!')
+                    }
+
+
                 }
+                console.log('RESPONSE ARRAY:\n', responseArray)
 
-
-              }
-console.log('RESPONSE ARRAY:\n',responseArray)
-
-        })
+            })
     })
 }
 
