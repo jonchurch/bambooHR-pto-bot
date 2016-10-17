@@ -16,6 +16,6 @@ Uses the BambooHR time off API, botkit, lodash.find, and moment!
 1. From within the bambooHR-whosOut directory, run
 ```
 docker build -t whosout:latest -q . &&
-docker run -d --env BAMBOOHR_SUBDOMAIN=paracosm --env SLACK_WEBHOOK=<YOUR WEBHOOK> --name whosout --env BAMBOOHR_TOKEN=<YOUR TOKEN> whosout
+docker run -d --env BAMBOOHR_SUBDOMAIN=<YOUR TEAM> --env SLACK_WEBHOOK=<YOUR WEBHOOK> --name whosout --env BAMBOOHR_TOKEN=<YOUR TOKEN> whosout
 ```
 2. The scheduler is now running, and will wait until 8am Mondays system time to post to the channel you setup the custom integration to default to.
