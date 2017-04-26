@@ -1,28 +1,35 @@
 'use strict';
 const request = require('request-promise-native')
-const Botkit = require('botkit')
 const parseXml = require('xml2js').parseString
 const moment = require('moment')
 require('moment-range')
+require('moment-timezone')
 const find = require('lodash.find')
-const controller = Botkit.slackbot({})
 
-const bot = controller.spawn({
-    incoming_webhook: {
-        url: process.env.SLACK_WEBHOOK
-    }
-})
+var opts = {
+    team: 'testbed',
+    apiKey: process.env.apiKey,
+    tz: 'America/New_York'
+}
+whosOut(opts)
 
-function whosOut() {
+function whosOut(config) {
     const date = new Date()
     console.log('Whos out running\nCurrent time is: ' + date.getHours() + ':' + date.getMinutes())
 
     const options = {
-        url: 'https://' + process.env.BAMBOOHR_TOKEN + ':x@api.bamboohr.com/api/gateway.php/' + process.env.BAMBOOHR_SUBDOMAIN + '/v1/time_off/whos_out/?start=2016-09-1&end=2016-12-31'
+        url: `https://api.bamboohr.com/api/gateway.php/${config.team}/v1/time_off/whos_out/`,
+        auth: {
+            user: config.apiKey,
+            pass: 'x'
+        },
+        qs: {
+            start: moment().tz(config.tz).format('YYYY-MM-DD')
+       //     end: 'END?'
+        }
     }
 
 
-    var data;
 
     request(options).then(function(xml) {
         parseXml(xml, function(err, result) {
@@ -30,7 +37,7 @@ function whosOut() {
                 console.log('XML PARSE ERROR:', err)
                 return
             }
-            // console.log('=============RESULT\n', result)
+             console.log('=============RESULT\n', result)
 
             const responseArray = []
 
@@ -133,15 +140,15 @@ function whosOut() {
 
             } // end week for loop
 
-            bot.sendWebhook({
-                text: 'Scheduled to be out:\n' + responseArray.join('\n\n'),
-                username: 'Who\'s Out?',
-                icon_emoji: ':date:'
-            }, function(err) {
-                if (err) {
-                    console.log(err)
-                } else console.log('message sent!');
-            });
+            // bot.sendWebhook({
+            //     text: 'Scheduled to be out:\n' + responseArray.join('\n\n'),
+            //     username: 'Who\'s Out?',
+            //     icon_emoji: ':date:'
+            // }, function(err) {
+            //     if (err) {
+            //         console.log(err)
+            //     } else console.log('message sent!');
+            // });
 
 
             console.log('RESPONSE ARRAY:\n', responseArray)
